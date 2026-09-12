@@ -2,10 +2,13 @@ import compression from "compression";
 import cookieParser from "cookie-parser";
 import express, { type Express } from "express";
 import helmet from "helmet";
+import { loadUser, originCheck } from "./auth/middleware";
 import type { Db } from "./db/client";
 import type { Env } from "./env";
 import { errorHandler } from "./lib/http";
+import { authRouter } from "./routes/auth";
 import { healthRouter } from "./routes/health";
+import { projectsRouter } from "./routes/projects";
 
 export type AppDeps = {
   env: Env;
@@ -52,9 +55,13 @@ export function createApp(deps: AppDeps, options: CreateAppOptions = {}): Expres
   );
   app.use(compression());
   app.use(cookieParser());
-  app.use("/api", express.json({ limit: "1mb" }));
+
+  // Session-cookie routes: resolve the user, reject cross-origin writes (CSRF), parse JSON.
+  app.use("/api", loadUser(deps.db), originCheck, express.json({ limit: "1mb" }));
 
   app.use("/api/health", healthRouter(deps));
+  app.use("/api/auth", authRouter(deps));
+  app.use("/api/projects", projectsRouter(deps));
   app.use("/api", (_req, res) => {
     res.status(404).json({ error: "not_found", message: "Unknown API route" });
   });

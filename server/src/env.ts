@@ -18,6 +18,9 @@ const EnvSchema = z.object({
 
   DAILY_RUN_LIMIT: z.coerce.number().int().nonnegative().default(40),
   GUEST_DAILY_RUN_LIMIT: z.coerce.number().int().nonnegative().default(10),
+  /** Per-IP limits; raised in E2E runs where every test signs up from localhost. */
+  AUTH_ATTEMPTS_PER_15MIN: z.coerce.number().int().positive().default(30),
+  GUEST_SIGNUPS_PER_HOUR: z.coerce.number().int().positive().default(5),
 
   /** Public base URL, used to build OAuth callback URLs. */
   APP_URL: optional(z.url()),
