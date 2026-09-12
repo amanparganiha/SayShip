@@ -82,7 +82,7 @@ export function toProjectDetail(project: Project, latestVersion: number | null):
   return { ...toProjectSummary(project, latestVersion), plan: project.plan ?? null };
 }
 
-export function toVersionDetail(gen: Generation): VersionDetail {
+export function toVersionSummary(gen: Generation): VersionSummary {
   return {
     version: gen.version,
     mode: gen.mode,
@@ -91,8 +91,11 @@ export function toVersionDetail(gen: Generation): VersionDetail {
     model: gen.model,
     durationMs: gen.durationMs,
     createdAt: gen.createdAt.toISOString(),
-    files: gen.files,
   };
+}
+
+export function toVersionDetail(gen: Generation): VersionDetail {
+  return { ...toVersionSummary(gen), files: gen.files };
 }
 
 /** "Build me a habit tracker with streaks." -> "Habit tracker with streaks" (replaced by the plan's appName later). */

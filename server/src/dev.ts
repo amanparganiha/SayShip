@@ -9,6 +9,7 @@ import { createApp } from "./app";
 import { createDb } from "./db/client";
 import { runMigrations } from "./db/migrate";
 import { loadEnv } from "./env";
+import { createLlm } from "./llm";
 import { getRuntimeAssets } from "./sandbox/runtimeAssets";
 
 const env = loadEnv();
@@ -24,7 +25,7 @@ const vite = await createViteServer({
   appType: "spa",
 });
 
-const app = createApp({ env, db }, { frontend: (app) => app.use(vite.middlewares) });
+const app = createApp({ env, db, llm: createLlm(env) }, { frontend: (app) => app.use(vite.middlewares) });
 httpServer.on("request", app);
 httpServer.listen(env.PORT, "0.0.0.0", () => {
   console.log(`PromptShip dev server on http://localhost:${env.PORT} (LLM: ${env.llmProvider})`);

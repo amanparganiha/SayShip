@@ -7,6 +7,7 @@ import { createApp } from "./app";
 import { createDb } from "./db/client";
 import { runMigrations } from "./db/migrate";
 import { loadEnv } from "./env";
+import { createLlm } from "./llm";
 import { getRuntimeAssets } from "./sandbox/runtimeAssets";
 
 // Nothing reads NODE_ENV at import time, so defaulting it here (after hoisted imports) is safe.
@@ -20,7 +21,7 @@ void getRuntimeAssets();
 const publicDir = path.resolve("dist/public");
 
 const app = createApp(
-  { env, db },
+  { env, db, llm: createLlm(env) },
   {
     frontend: (app) => {
       app.use(

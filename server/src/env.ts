@@ -14,7 +14,9 @@ const EnvSchema = z.object({
   LLM_PROVIDER: optional(z.enum(["openai", "mock"])),
   OPENAI_API_KEY: optional(z.string()),
   OPENAI_BASE_URL: optional(z.url()),
-  OPENAI_MODEL: z.string().default("gpt-5-mini"),
+  OPENAI_MODEL: z.string().default("gpt-5.4-mini"),
+  /** Sent as reasoning_effort for reasoning models; leave empty for models that don't support it. */
+  OPENAI_REASONING_EFFORT: optional(z.enum(["none", "minimal", "low", "medium", "high"])),
 
   DAILY_RUN_LIMIT: z.coerce.number().int().nonnegative().default(40),
   GUEST_DAILY_RUN_LIMIT: z.coerce.number().int().nonnegative().default(10),

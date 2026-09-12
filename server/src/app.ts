@@ -6,8 +6,10 @@ import { loadUser, originCheck } from "./auth/middleware";
 import type { Db } from "./db/client";
 import type { Env } from "./env";
 import { errorHandler } from "./lib/http";
+import type { LlmClient } from "./llm";
 import { authRouter } from "./routes/auth";
 import { dataRouter } from "./routes/data";
+import { generateRouter } from "./routes/generate";
 import { healthRouter } from "./routes/health";
 import { previewRouter } from "./routes/preview";
 import { projectsRouter } from "./routes/projects";
@@ -16,6 +18,7 @@ import { runtimeRouter } from "./routes/runtime";
 export type AppDeps = {
   env: Env;
   db: Db;
+  llm: LlmClient;
 };
 
 export type CreateAppOptions = {
@@ -69,7 +72,7 @@ export function createApp(deps: AppDeps, options: CreateAppOptions = {}): Expres
 
   app.use("/api/health", healthRouter(deps));
   app.use("/api/auth", authRouter(deps));
-  app.use("/api/projects", projectsRouter(deps));
+  app.use("/api/projects", projectsRouter(deps), generateRouter(deps));
   app.use("/api", (_req, res) => {
     res.status(404).json({ error: "not_found", message: "Unknown API route" });
   });

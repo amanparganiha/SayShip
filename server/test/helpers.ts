@@ -3,14 +3,16 @@ import request from "supertest";
 import { createApp } from "../src/app";
 import { createDb } from "../src/db/client";
 import { loadEnv } from "../src/env";
+import { createLlm, type LlmClient } from "../src/llm";
 
 /** A fresh app wired to the test database. Call `pool.end()` in afterAll. */
-export function setupTestApp() {
+export function setupTestApp(overrides: { llm?: LlmClient; env?: Record<string, string> } = {}) {
   // A copy of process.env, so loadEnv doesn't read the developer's .env file.
-  const env = loadEnv({ ...process.env });
+  const env = loadEnv({ ...process.env, ...overrides.env });
   const { db, pool } = createDb(env.DATABASE_URL);
-  const app = createApp({ env, db });
-  return { env, db, pool, app };
+  const llm = overrides.llm ?? createLlm(env);
+  const app = createApp({ env, db, llm });
+  return { env, db, pool, app, llm };
 }
 
 let counter = 0;
