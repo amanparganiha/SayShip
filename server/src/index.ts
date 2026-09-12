@@ -7,12 +7,15 @@ import { createApp } from "./app";
 import { createDb } from "./db/client";
 import { runMigrations } from "./db/migrate";
 import { loadEnv } from "./env";
+import { getRuntimeAssets } from "./sandbox/runtimeAssets";
 
 // Nothing reads NODE_ENV at import time, so defaulting it here (after hoisted imports) is safe.
 process.env.NODE_ENV ??= "production";
 const env = loadEnv();
 const { db } = createDb(env.DATABASE_URL);
 await runMigrations(db);
+// Bundle React/Tailwind for generated apps now, so the first preview doesn't pay for it.
+void getRuntimeAssets();
 
 const publicDir = path.resolve("dist/public");
 

@@ -6,6 +6,7 @@ import { currentUser, requireAuth } from "../auth/middleware";
 import { projects } from "../db/schema";
 import { notFound } from "../lib/http";
 import { randomKey } from "../lib/random";
+import { resetData, summarizeData } from "../services/appData";
 import {
   getGeneration,
   getOwnedProject,
@@ -15,6 +16,8 @@ import {
   toProjectDetail,
   toVersionDetail,
 } from "../services/projects";
+
+const AppEnvQuery = z.enum(["preview", "live"]).catch("preview");
 
 const CreateProjectBody = z.object({
   prompt: z.string().trim().min(3, "Describe your app in a few words").max(2000, "Keep the prompt under 2000 characters"),
@@ -70,6 +73,20 @@ export function projectsRouter({ db }: AppDeps) {
     const project = await getOwnedProject(db, currentUser(req).id, parseId(req.params.id));
     const gen = await getGeneration(db, project.id, parseId(req.params.version, "Version"));
     res.json({ version: toVersionDetail(gen) });
+  });
+
+  /** Data panel: what the generated app has stored (preview or live environment). */
+  router.get("/:id/data", async (req, res) => {
+    const project = await getOwnedProject(db, currentUser(req).id, parseId(req.params.id));
+    const env = AppEnvQuery.parse(req.query.env);
+    res.json({ env, collections: await summarizeData(db, project.id, env) });
+  });
+
+  /** Clears preview data only; live data belongs to the published app's visitors. */
+  router.delete("/:id/data", async (req, res) => {
+    const project = await getOwnedProject(db, currentUser(req).id, parseId(req.params.id));
+    await resetData(db, project.id, "preview");
+    res.status(204).end();
   });
 
   return router;

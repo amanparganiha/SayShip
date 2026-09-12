@@ -9,10 +9,12 @@ import { createApp } from "./app";
 import { createDb } from "./db/client";
 import { runMigrations } from "./db/migrate";
 import { loadEnv } from "./env";
+import { getRuntimeAssets } from "./sandbox/runtimeAssets";
 
 const env = loadEnv();
 const { db } = createDb(env.DATABASE_URL);
 await runMigrations(db);
+void getRuntimeAssets();
 
 const httpServer = http.createServer();
 const vite = await createViteServer({

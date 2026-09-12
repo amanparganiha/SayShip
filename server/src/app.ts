@@ -7,8 +7,11 @@ import type { Db } from "./db/client";
 import type { Env } from "./env";
 import { errorHandler } from "./lib/http";
 import { authRouter } from "./routes/auth";
+import { dataRouter } from "./routes/data";
 import { healthRouter } from "./routes/health";
+import { previewRouter } from "./routes/preview";
 import { projectsRouter } from "./routes/projects";
+import { runtimeRouter } from "./routes/runtime";
 
 export type AppDeps = {
   env: Env;
@@ -55,6 +58,11 @@ export function createApp(deps: AppDeps, options: CreateAppOptions = {}): Expres
   );
   app.use(compression());
   app.use(cookieParser());
+
+  // Generated apps: runtime bundles, sandboxed preview/published pages, and their data API.
+  app.use(runtimeRouter());
+  app.use(previewRouter(deps));
+  app.use("/data", dataRouter(deps));
 
   // Session-cookie routes: resolve the user, reject cross-origin writes (CSRF), parse JSON.
   app.use("/api", loadUser(deps.db), originCheck, express.json({ limit: "1mb" }));
