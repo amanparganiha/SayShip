@@ -1,0 +1,5 @@
+# Normalize line endings: developed on Windows, deployed on Linux (Replit).
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.ico binary

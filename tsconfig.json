@@ -1,0 +1,24 @@
+{
+  // Shared compiler options. `client/` and `server/` extend this and declare their own `include`.
+  // The `@shared/*` alias is defined here so tsx (dev server), esbuild and both tsc projects agree on it.
+  "compilerOptions": {
+    "target": "ES2023",
+    "lib": ["ES2023"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "forceConsistentCasingInFileNames": true,
+    "noEmit": true,
+    "types": [],
+    "paths": {
+      "@shared/*": ["./shared/*"]
+    }
+  },
+  "include": []
+}

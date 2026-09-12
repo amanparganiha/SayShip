@@ -1,0 +1,66 @@
+import compression from "compression";
+import cookieParser from "cookie-parser";
+import express, { type Express } from "express";
+import helmet from "helmet";
+import type { Db } from "./db/client";
+import type { Env } from "./env";
+import { errorHandler } from "./lib/http";
+import { healthRouter } from "./routes/health";
+
+export type AppDeps = {
+  env: Env;
+  db: Db;
+};
+
+export type CreateAppOptions = {
+  /** Mounts the client: Vite middleware in development, static files in production. */
+  frontend?: (app: Express) => void;
+};
+
+/**
+ * Builds the Express app without listening, so tests can drive it with supertest
+ * and the dev/prod entry points can attach their own frontend handling.
+ */
+export function createApp(deps: AppDeps, options: CreateAppOptions = {}): Express {
+  const { env } = deps;
+  const app = express();
+  const isProd = env.NODE_ENV === "production";
+
+  app.disable("x-powered-by");
+  // Replit (and most hosts) terminate TLS at a proxy; trust it for req.ip / req.protocol.
+  app.set("trust proxy", 1);
+
+  app.use(
+    helmet({
+      // Vite's dev server injects inline scripts, so the CSP is only enforced in production.
+      contentSecurityPolicy: isProd
+        ? {
+            directives: {
+              defaultSrc: ["'self'"],
+              scriptSrc: ["'self'"],
+              // CodeMirror injects <style> elements at runtime.
+              styleSrc: ["'self'", "'unsafe-inline'"],
+              imgSrc: ["'self'", "data:", "https://avatars.githubusercontent.com"],
+              frameSrc: ["'self'"],
+              connectSrc: ["'self'"],
+              // TLS is terminated by the host (Replit); upgrading would break plain-http localhost runs.
+              upgradeInsecureRequests: null,
+            },
+          }
+        : false,
+    }),
+  );
+  app.use(compression());
+  app.use(cookieParser());
+  app.use("/api", express.json({ limit: "1mb" }));
+
+  app.use("/api/health", healthRouter(deps));
+  app.use("/api", (_req, res) => {
+    res.status(404).json({ error: "not_found", message: "Unknown API route" });
+  });
+
+  options.frontend?.(app);
+
+  app.use(errorHandler);
+  return app;
+}
