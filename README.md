@@ -4,7 +4,7 @@
 
 **Describe an app in plain English. SayShip plans it, streams the code file by file, runs it in a sandboxed live preview with its own database-backed API, fixes its own runtime errors, and publishes it to a public URL.**
 
-**Live demo:** [say-ship--parganiha.replit.app](https://say-ship--parganiha.replit.app) · **Replit project:** [replit.com/@parganiha/SayShip](https://replit.com/@parganiha/SayShip) · **Demo video:** _add link_
+**Live demo:** [say-ship--parganiha.replit.app](https://say-ship--parganiha.replit.app) · **Replit project:** [replit.com/@parganiha/SayShip](https://replit.com/@parganiha/SayShip) ·
 
 ```
 "A habit tracker with daily check-ins and streaks"
