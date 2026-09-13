@@ -4,8 +4,7 @@
 
 **Describe an app in plain English. SayShip plans it, streams the code file by file, runs it in a sandboxed live preview with its own database-backed API, fixes its own runtime errors, and publishes it to a public URL.**
 
-<!-- Replace with your links after deploying: -->
-**Live demo:** `https://<your-app>.replit.app` · **Replit project:** `https://replit.com/@<you>/sayship` · **Demo video:** _add link_
+**Live demo:** [say-ship--parganiha.replit.app](https://say-ship--parganiha.replit.app) · **Replit project:** [replit.com/@parganiha/SayShip](https://replit.com/@parganiha/SayShip) · **Demo video:** _add link_
 
 ```
 "A habit tracker with daily check-ins and streaks"
@@ -157,7 +156,12 @@ npm run dev                          # http://localhost:3000
 
 Notes:
 - **Migrations run on every boot** under a Postgres advisory lock, so several instances starting together migrate once. They're written idempotently (`IF NOT EXISTS`): keep new migrations that way, because Replit can seed production from development data.
-- **Spend control:** `GLOBAL_DAILY_RUN_LIMIT` caps model runs across all users. Per-IP limits depend on `TRUST_PROXY_HOPS`: `/api/health` echoes the IP the server sees for you. If two different networks show the same address, raise it to `2`.
+- **Spend control:** `GLOBAL_DAILY_RUN_LIMIT` caps model runs across all users.
+- **Client IPs on Replit Autoscale:** set the deployment secret `TRUST_PROXY_HOPS=4`. Requests pass through Google's load balancer, which appends both your IP and its own public address to `X-Forwarded-For`, and then through Replit's proxy.
+  - `/api/health` echoes the IP the server sees. It should equal your public IP (compare with `https://api.ipify.org`).
+  - A `34.x`, `35.x` or `136.x` address means the value is too low.
+  - Never set it higher than the real chain: entries further left are client-supplied and forgeable.
+- **Development preview vs published app:** the workspace preview (`*.replit.dev`) buffers streamed responses and doesn't render the sandboxed app preview. The published `*.replit.app` site streams live and renders previews, so test end to end on the published URL.
 - **Push to GitHub (optional):**
   1. Create a GitHub OAuth App with callback URL `https://<your-app>.replit.app/api/github/callback`.
   2. Add `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET` to the deployment secrets.
@@ -178,7 +182,7 @@ Notes:
 | `DAILY_RUN_LIMIT` / `GUEST_DAILY_RUN_LIMIT` | `40` / `10` | Generation runs per user per 24 h |
 | `GLOBAL_DAILY_RUN_LIMIT` | `500` | Generation runs per 24 h across all users (caps model spend) |
 | `AUTH_ATTEMPTS_PER_15MIN` / `GUEST_SIGNUPS_PER_HOUR` | `30` / `5` | Per-IP limits |
-| `TRUST_PROXY_HOPS` | `1` | Reverse proxies in front of the app; decides the client IP used by rate limits |
+| `TRUST_PROXY_HOPS` | `1` | Reverse proxies in front of the app; decides the client IP used by rate limits (Replit Autoscale: `4`) |
 | `APP_URL` | request origin | Public base URL (GitHub OAuth callback) |
 | `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` | unset | Enable "Push to GitHub" |
 | `PORT` | `3000` | HTTP port |
