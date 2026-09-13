@@ -1,5 +1,7 @@
 # SayShip
 
+[![CI](https://github.com/amanparganiha/SayShip/actions/workflows/ci.yml/badge.svg)](https://github.com/amanparganiha/SayShip/actions/workflows/ci.yml)
+
 **Describe an app in plain English. SayShip plans it, streams the code file by file, runs it in a sandboxed live preview with its own database-backed API, fixes its own runtime errors, and publishes it to a public URL.**
 
 <!-- Replace with your links after deploying: -->
@@ -116,7 +118,7 @@ sequenceDiagram
 Requirements: **Node 22+** and **Docker** (for Postgres).
 
 ```bash
-git clone <this repo> && cd sayship
+git clone https://github.com/amanparganiha/SayShip.git && cd SayShip
 docker compose up -d                 # Postgres 16 on :5432 (creates sayship + sayship_test)
 cp .env.example .env                 # then set SESSION_SECRET (and OPENAI_API_KEY for real generations)
 npm install
