@@ -5,6 +5,7 @@ import type { VersionSummary } from "@shared/api";
 import { Header } from "../components/Header";
 import { ErrorText, FullScreenSpinner } from "../components/ui";
 import CodeViewer from "../components/workspace/CodeViewer";
+import { MAX_AUTO_FIX_ATTEMPTS } from "../components/workspace/ErrorBanner";
 import FileTree from "../components/workspace/FileTree";
 import PlanView from "../components/workspace/PlanView";
 import Preview from "../components/workspace/Preview";
@@ -71,6 +72,22 @@ export default function Workspace({ projectId }: { projectId: number }) {
     if (!s.preview.error || s.run?.status === "running") return;
     void start({ mode: "fix", error: s.preview.error, baseVersion: s.viewing ?? undefined });
   }, [start]);
+
+  // Auto-fix loop: when the newest version reports an error, hand it to the fixer agent.
+  // Capped at MAX_AUTO_FIX_ATTEMPTS in a row; a clean render or a manual change resets the count.
+  const previewError = useWorkspace((s) => s.preview.error);
+  const autoFix = useWorkspace((s) => s.autoFix);
+  const attempts = useWorkspace((s) => s.autoFixAttempts);
+  const latestVersion = project.data?.versions.at(-1)?.version ?? null;
+  useEffect(() => {
+    if (!autoFix || running || !previewError || attempts >= MAX_AUTO_FIX_ATTEMPTS) return;
+    if (viewing === null || viewing !== latestVersion) return; // never auto-edit while browsing history
+    const timer = setTimeout(() => {
+      useWorkspace.getState().countAutoFix();
+      fix();
+    }, 1200);
+    return () => clearTimeout(timer);
+  }, [autoFix, running, previewError, attempts, viewing, latestVersion, fix]);
 
   const restore = useMutation({
     mutationFn: (v: number) =>
