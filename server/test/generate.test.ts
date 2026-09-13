@@ -140,6 +140,19 @@ describe("POST /api/projects/:id/generate", () => {
     expect(res.body.error).toBe("quota_exceeded");
   });
 
+  it("stops everyone once the global daily budget is spent", async () => {
+    const [{ n }] = (await main.pool.query("select count(*)::int as n from usage_events")).rows as [{ n: number }];
+    const capped = setupTestApp({ env: { GLOBAL_DAILY_RUN_LIMIT: String(n) } });
+    try {
+      const { agent, id } = await newProject(capped.app);
+      const res = await agent.post(`/api/projects/${id}/generate`).send({ mode: "create" });
+      expect(res.status).toBe(429);
+      expect(res.body.message).toMatch(/daily generation budget/);
+    } finally {
+      await capped.pool.end();
+    }
+  });
+
   it("reports model failures as an error event, releases the lease and still counts usage", async () => {
     const { agent, id } = await newProject(failing.app);
     const { events } = await generate(agent, id, { mode: "create" });

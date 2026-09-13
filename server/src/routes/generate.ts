@@ -12,7 +12,7 @@ import { describeProviderError } from "../llm/openai";
 import { LlmError, UsageMeter } from "../llm/types";
 import { HttpError } from "../lib/http";
 import { acquireRunLease, releaseRunLease } from "../lib/lease";
-import { getUsage } from "../lib/quota";
+import { getUsage, globalRunsToday } from "../lib/quota";
 import { openSse } from "../lib/sse";
 import { recordUsage, saveGeneration } from "../services/generations";
 import {
@@ -100,6 +100,9 @@ export function generateRouter({ db, env, llm }: AppDeps) {
     const usage = await getUsage(db, env, user);
     if (usage.remaining <= 0) {
       throw new HttpError(429, "quota_exceeded", `You've used all ${usage.limit} generation runs for the last 24 hours.`);
+    }
+    if ((await globalRunsToday(db)) >= env.GLOBAL_DAILY_RUN_LIMIT) {
+      throw new HttpError(429, "quota_exceeded", "SayShip has reached its daily generation budget. Please try again tomorrow.");
     }
     if (!(await acquireRunLease(db, project.id))) {
       throw new HttpError(409, "run_in_progress", "A generation is already running for this project.");

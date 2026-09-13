@@ -111,7 +111,7 @@ sequenceDiagram
 | Server | Node 22+, Express 5, TypeScript, zod, Drizzle ORM, PostgreSQL 16, esbuild, fflate |
 | AI | OpenAI Chat Completions: Structured Outputs (`zodResponseFormat`) and streaming |
 | Security | scrypt passwords, sha256-hashed session tokens, SameSite cookies + Origin check (CSRF), helmet, express-rate-limit, AES-256-GCM for OAuth tokens |
-| Testing | Vitest + supertest (59 tests), Playwright (10 E2E tests against the production build), GitHub Actions |
+| Testing | Vitest + supertest (67 tests), Playwright (10 E2E tests against the production build), GitHub Actions |
 
 ## Run it locally
 
@@ -139,22 +139,30 @@ npm run dev                          # http://localhost:3000
 
 ## Deploy on Replit
 
-1. Push this repository to GitHub, then in Replit choose **Create Repl → Import from GitHub**. The `.replit` file selects Node 22 and PostgreSQL 16.
-2. Open **Database** and create a PostgreSQL database. Replit injects `DATABASE_URL`.
-3. Open **Secrets** and add:
-   - `SESSION_SECRET` (32+ random characters)
+1. **Import.** In Replit, create an app with **Import from GitHub** and pick this repository. The `.replit` file selects Node 22 and PostgreSQL 16, and holds the run, build and port settings.
+2. **Development database.** Open the **Database** tool and create a PostgreSQL database. Replit sets `DATABASE_URL` for the workspace.
+3. **Secrets.** Open **Secrets** and add:
+   - `SESSION_SECRET`: generate one in the Shell with `node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"`
    - `OPENAI_API_KEY`
-   - optionally `OPENAI_MODEL`
-4. Press **Run**. Migrations apply automatically and the webview shows the app.
-5. Choose **Deploy → Autoscale**. Build and run commands come from `.replit` (`npm run build`, `npm run start`).
-   - Add the same secrets to the deployment.
-   - Check `https://<your-app>.replit.app/api/health`.
-6. *(Optional) Push to GitHub.*
-   1. Create a GitHub OAuth App with callback URL `https://<your-app>.replit.app/api/github/callback`.
-   2. Set `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` and `APP_URL=https://<your-app>.replit.app`.
-   3. Use a second OAuth App for local development, with callback `http://localhost:3000/api/github/callback`.
+   - optional: `OPENAI_MODEL`, `GLOBAL_DAILY_RUN_LIMIT`
+4. **Run.** Press **Run** (`npm run dev`). Migrations apply on boot and the preview pane shows SayShip. Try a generation here first.
+5. **Publish.** Choose **Publish → Autoscale**.
+   - Keep the build and run commands from `.replit`: `npm ci --include=dev && npm run build`, then `npm run start`.
+   - Check that the secrets were copied into the deployment. After the first publish, deployment secrets are managed separately from the workspace ones.
+   - Replit creates the **production database** during publishing and sets its `DATABASE_URL` for the published app. You can seed it from development data or start empty: migrations handle both.
+6. **Verify.**
+   - `https://<your-app>.replit.app/api/health` should return `"ok":true` and `"llm":"openai"`.
+   - Sign in as a guest, generate an app, publish it, and open its `/p/…` link in a private window.
+7. **Updates.** Push to GitHub, pull in the Replit workspace, then publish again.
 
-If Autoscale ever cuts long streaming runs, a Reserved VM deployment works with the same configuration.
+Notes:
+- **Migrations run on every boot** under a Postgres advisory lock, so several instances starting together migrate once. They're written idempotently (`IF NOT EXISTS`): keep new migrations that way, because Replit can seed production from development data.
+- **Spend control:** `GLOBAL_DAILY_RUN_LIMIT` caps model runs across all users. Per-IP limits depend on `TRUST_PROXY_HOPS`: `/api/health` echoes the IP the server sees for you. If two different networks show the same address, raise it to `2`.
+- **Push to GitHub (optional):**
+  1. Create a GitHub OAuth App with callback URL `https://<your-app>.replit.app/api/github/callback`.
+  2. Add `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET` to the deployment secrets.
+  3. Use a second OAuth App for local development, with callback `http://localhost:3000/api/github/callback`.
+- **Long runs:** if Autoscale ever cuts long streaming runs, a Reserved VM deployment works with the same configuration.
 
 ## Configuration
 
@@ -165,10 +173,12 @@ If Autoscale ever cuts long streaming runs, a Reserved VM deployment works with 
 | `OPENAI_API_KEY` | required in production | Enables the OpenAI provider |
 | `LLM_PROVIDER` | `openai` if a key is set, else `mock` (development only) | Force `openai` or `mock` |
 | `OPENAI_MODEL` | `gpt-5.4-mini` | Model for all agents |
-| `OPENAI_REASONING_EFFORT` | unset | `none`/`minimal`/`low`/`medium`/`high` for reasoning models |
+| `OPENAI_REASONING_EFFORT` | `low` for gpt-5.x / o-series, else unset | `none`/`minimal`/`low`/`medium`/`high` |
 | `OPENAI_BASE_URL` | unset | Any OpenAI-compatible endpoint |
 | `DAILY_RUN_LIMIT` / `GUEST_DAILY_RUN_LIMIT` | `40` / `10` | Generation runs per user per 24 h |
+| `GLOBAL_DAILY_RUN_LIMIT` | `500` | Generation runs per 24 h across all users (caps model spend) |
 | `AUTH_ATTEMPTS_PER_15MIN` / `GUEST_SIGNUPS_PER_HOUR` | `30` / `5` | Per-IP limits |
+| `TRUST_PROXY_HOPS` | `1` | Reverse proxies in front of the app; decides the client IP used by rate limits |
 | `APP_URL` | request origin | Public base URL (GitHub OAuth callback) |
 | `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` | unset | Enable "Push to GitHub" |
 | `PORT` | `3000` | HTTP port |

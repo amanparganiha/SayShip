@@ -8,5 +8,6 @@ externalPort = 80
 
 [deployment]
 deploymentTarget = "autoscale"
-build = ["npm", "run", "build"]
+# Install exactly what the lockfile says (dev dependencies included: the build needs Vite).
+build = ["sh", "-c", "npm ci --include=dev && npm run build"]
 run = ["npm", "run", "start"]

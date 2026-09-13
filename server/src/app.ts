@@ -39,7 +39,7 @@ export function createApp(deps: AppDeps, options: CreateAppOptions = {}): Expres
 
   app.disable("x-powered-by");
   // Replit (and most hosts) terminate TLS at a proxy; trust it for req.ip / req.protocol.
-  app.set("trust proxy", 1);
+  app.set("trust proxy", env.TRUST_PROXY_HOPS);
 
   app.use(
     helmet({

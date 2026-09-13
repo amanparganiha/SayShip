@@ -5,6 +5,15 @@ import { LlmError, type LlmClient } from "./types";
 
 const MAX_COMPLETION_TOKENS = 16_000;
 
+/**
+ * gpt-5.x and o-series models are reasoning models; their default effort makes code stream
+ * slowly, so they get "low" unless configured. Other models don't accept the parameter at all.
+ */
+export function reasoningEffortFor(model: string, configured: Env["OPENAI_REASONING_EFFORT"]) {
+  if (configured) return configured;
+  return /^(gpt-5|o\d)/i.test(model) ? ("low" as const) : undefined;
+}
+
 export function createOpenAiClient(env: Env): LlmClient {
   const client = new OpenAI({
     apiKey: env.OPENAI_API_KEY,
@@ -13,8 +22,8 @@ export function createOpenAiClient(env: Env): LlmClient {
     timeout: 120_000,
   });
   const model = env.OPENAI_MODEL;
-  // Reasoning models get slow at the default effort; code generation streams better at "low".
-  const reasoning = env.OPENAI_REASONING_EFFORT ? { reasoning_effort: env.OPENAI_REASONING_EFFORT } : {};
+  const effort = reasoningEffortFor(model, env.OPENAI_REASONING_EFFORT);
+  const reasoning = effort ? { reasoning_effort: effort } : {};
 
   return {
     provider: "openai",
