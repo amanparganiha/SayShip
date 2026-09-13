@@ -1,6 +1,13 @@
 import clsx from "clsx";
 import { Loader2, X } from "lucide-react";
-import { useEffect, type ButtonHTMLAttributes, type InputHTMLAttributes, type ReactNode, type TextareaHTMLAttributes } from "react";
+import {
+  useEffect,
+  type AnchorHTMLAttributes,
+  type ButtonHTMLAttributes,
+  type InputHTMLAttributes,
+  type ReactNode,
+  type TextareaHTMLAttributes,
+} from "react";
 
 type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
 
@@ -10,6 +17,16 @@ const variants: Record<ButtonVariant, string> = {
   ghost: "text-neutral-300 hover:bg-neutral-800 hover:text-white",
   danger: "bg-red-600 text-white hover:bg-red-500",
 };
+
+const buttonClasses = (variant: ButtonVariant, size: "sm" | "md", className?: string) =>
+  clsx(
+    "inline-flex items-center justify-center gap-1.5 rounded-md font-medium transition-colors",
+    "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-400",
+    "disabled:cursor-not-allowed disabled:opacity-60",
+    size === "sm" ? "h-7 px-2.5 text-xs" : "h-9 px-3.5 text-sm",
+    variants[variant],
+    className,
+  );
 
 export function Button({
   variant = "secondary",
@@ -21,22 +38,21 @@ export function Button({
   ...props
 }: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: ButtonVariant; size?: "sm" | "md"; loading?: boolean }) {
   return (
-    <button
-      {...props}
-      disabled={disabled || loading}
-      className={clsx(
-        "inline-flex items-center justify-center gap-1.5 rounded-md font-medium transition-colors",
-        "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-400",
-        "disabled:cursor-not-allowed disabled:opacity-60",
-        size === "sm" ? "h-7 px-2.5 text-xs" : "h-9 px-3.5 text-sm",
-        variants[variant],
-        className,
-      )}
-    >
+    <button {...props} disabled={disabled || loading} className={buttonClasses(variant, size, className)}>
       {loading && <Loader2 className="size-3.5 animate-spin" aria-hidden />}
       {children}
     </button>
   );
+}
+
+/** A link that looks like a button (for navigations such as OAuth redirects). */
+export function LinkButton({
+  variant = "secondary",
+  size = "md",
+  className,
+  ...props
+}: AnchorHTMLAttributes<HTMLAnchorElement> & { variant?: ButtonVariant; size?: "sm" | "md" }) {
+  return <a {...props} className={buttonClasses(variant, size, className)} />;
 }
 
 const fieldClass =

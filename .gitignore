@@ -10,5 +10,6 @@ playwright-report/
 blob-report/
 playwright/.cache/
 .vite/
+server/test/.tmp/
 .DS_Store
 Thumbs.db

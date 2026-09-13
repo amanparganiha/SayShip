@@ -10,10 +10,12 @@ import type { LlmClient } from "./llm";
 import { authRouter } from "./routes/auth";
 import { dataRouter } from "./routes/data";
 import { generateRouter } from "./routes/generate";
+import { githubRouter } from "./routes/github";
 import { healthRouter } from "./routes/health";
 import { previewRouter } from "./routes/preview";
 import { projectsRouter } from "./routes/projects";
 import { runtimeRouter } from "./routes/runtime";
+import { shipRouter } from "./routes/ship";
 
 export type AppDeps = {
   env: Env;
@@ -72,7 +74,8 @@ export function createApp(deps: AppDeps, options: CreateAppOptions = {}): Expres
 
   app.use("/api/health", healthRouter(deps));
   app.use("/api/auth", authRouter(deps));
-  app.use("/api/projects", projectsRouter(deps), generateRouter(deps));
+  app.use("/api/projects", projectsRouter(deps), generateRouter(deps), shipRouter(deps));
+  app.use("/api/github", githubRouter(deps));
   app.use("/api", (_req, res) => {
     res.status(404).json({ error: "not_found", message: "Unknown API route" });
   });

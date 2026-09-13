@@ -1,14 +1,18 @@
 import { useMutation } from "@tanstack/react-query";
-import { useCallback, useEffect, useRef } from "react";
+import { Globe, Rocket } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Group, Panel, Separator } from "react-resizable-panels";
 import type { VersionSummary } from "@shared/api";
 import { Header } from "../components/Header";
-import { ErrorText, FullScreenSpinner } from "../components/ui";
+import { Badge, Button, ErrorText, FullScreenSpinner } from "../components/ui";
 import CodeViewer from "../components/workspace/CodeViewer";
 import { MAX_AUTO_FIX_ATTEMPTS } from "../components/workspace/ErrorBanner";
+import ExportMenu from "../components/workspace/ExportMenu";
 import FileTree from "../components/workspace/FileTree";
+import GitHubPushDialog from "../components/workspace/GitHubPushDialog";
 import PlanView from "../components/workspace/PlanView";
 import Preview from "../components/workspace/Preview";
+import PublishDialog from "../components/workspace/PublishDialog";
 import RefineInput from "../components/workspace/RefineInput";
 import RunTimeline from "../components/workspace/RunTimeline";
 import VersionHistory from "../components/workspace/VersionHistory";
@@ -89,6 +93,19 @@ export default function Workspace({ projectId }: { projectId: number }) {
     return () => clearTimeout(timer);
   }, [autoFix, running, previewError, attempts, viewing, latestVersion, fix]);
 
+  // Returning from GitHub OAuth (?github=connected|error): reopen the push dialog, clean the URL.
+  const [dialog, setDialog] = useState<"publish" | "github" | null>(null);
+  const [githubNotice, setGithubNotice] = useState<string | null>(null);
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const result = params.get("github");
+    if (!result) return;
+    window.history.replaceState(null, "", window.location.pathname);
+    void queryClient.invalidateQueries({ queryKey: keys.me });
+    setGithubNotice(result === "error" ? (params.get("message") ?? "GitHub sign-in failed.") : null);
+    setDialog("github");
+  }, []);
+
   const restore = useMutation({
     mutationFn: (v: number) =>
       api<{ version: VersionSummary }>(`/api/projects/${projectId}/versions/${v}/restore`, { method: "POST" }),
@@ -112,15 +129,44 @@ export default function Workspace({ projectId }: { projectId: number }) {
 
   const { project: info, versions } = project.data;
   const latest = versions.at(-1)?.version ?? null;
+  const live = info.publishedSlug !== null && info.publishedVersion !== null;
 
   return (
     <div className="flex h-full flex-col">
-      <Header>
+      <Header
+        actions={
+          <>
+            <ExportMenu projectId={projectId} viewing={viewing} onGitHub={() => setDialog("github")} />
+            <Button
+              size="sm"
+              variant="primary"
+              onClick={() => setDialog("publish")}
+              disabled={viewing === null || running}
+              data-testid="publish-button"
+            >
+              <Rocket className="size-3.5" /> Publish
+            </Button>
+          </>
+        }
+      >
         <span className="text-neutral-700">/</span>
         <span className="truncate text-sm text-neutral-300" data-testid="project-name">
           {info.name}
         </span>
+        {live && (
+          <a href={`/p/${info.publishedSlug}`} target="_blank" rel="noreferrer" data-testid="live-badge">
+            <Badge tone="green">
+              <Globe className="size-3" /> live v{info.publishedVersion}
+            </Badge>
+          </a>
+        )}
       </Header>
+      {dialog === "publish" && viewing !== null && (
+        <PublishDialog project={info} viewing={viewing} onClose={() => setDialog(null)} />
+      )}
+      {dialog === "github" && viewing !== null && (
+        <GitHubPushDialog project={info} viewing={viewing} notice={githubNotice} onClose={() => setDialog(null)} />
+      )}
 
       <Group orientation="horizontal" className="min-h-0 flex-1">
         <Panel defaultSize="24" minSize="16" maxSize="40" className="flex flex-col bg-neutral-950">
