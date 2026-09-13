@@ -2,6 +2,7 @@ import { useMutation } from "@tanstack/react-query";
 import { ChevronDown, LogOut, UserPlus } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Link } from "wouter";
+import type { MeResponse } from "@shared/api";
 import { api, errorMessage } from "../lib/api";
 import { keys, queryClient, useMe } from "../lib/queries";
 import { Badge, Button, ErrorText, Input, Label, Modal } from "./ui";
@@ -62,8 +63,9 @@ function UserMenu() {
   const logout = useMutation({
     mutationFn: () => api("/api/auth/logout", { method: "POST" }),
     onSuccess: () => {
-      queryClient.clear();
-      void queryClient.invalidateQueries({ queryKey: keys.me });
+      // Drop everything cached for this user, then flip `me` to signed-out (App redirects to /login).
+      queryClient.removeQueries({ predicate: (q) => q.queryKey[0] !== "me" });
+      queryClient.setQueryData<MeResponse>(keys.me, (old) => old && { ...old, user: null, usage: null });
     },
   });
 

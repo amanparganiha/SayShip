@@ -12,10 +12,10 @@
     "dev": "tsx watch --clear-screen=false server/src/dev.ts",
     "build": "node scripts/build.mjs",
     "start": "node dist/server.js",
-    "typecheck": "tsc -p client --noEmit && tsc -p server --noEmit",
+    "typecheck": "tsc -p client --noEmit && tsc -p server --noEmit && tsc -p e2e --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "playwright test",
+    "test:e2e": "npm run build && playwright test",
     "db:generate": "drizzle-kit generate",
     "db:studio": "drizzle-kit studio"
   },
