@@ -21,6 +21,11 @@ export function sslFor(connectionString: string): pg.PoolConfig["ssl"] {
 export function createDb(connectionString: string) {
   const ssl = sslFor(connectionString);
   const pool = new pg.Pool({ connectionString, max: 10, ...(ssl ? { ssl } : {}) });
+  // An idle connection can be closed by the server at any time (Neon, which hosts Replit's
+  // production databases, does so when it scales to zero). pg reports that as an 'error' event;
+  // without a listener Node treats it as uncaught and the whole server exits. The pool drops the
+  // dead client and opens a fresh one on the next query.
+  pool.on("error", (err) => console.warn(`[db] idle connection closed: ${err.message}`));
   const db = drizzle({ client: pool, schema });
   return { db, pool };
 }
