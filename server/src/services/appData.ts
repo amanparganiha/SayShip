@@ -1,4 +1,5 @@
 import { and, count, countDistinct, desc, eq, or, sql } from "drizzle-orm";
+import type { CollectionSummary, DataRecord } from "@shared/api";
 import type { Db } from "../db/client";
 import { appRecords, projects, type AppRecord } from "../db/schema";
 import { HttpError, notFound } from "../lib/http";
@@ -44,7 +45,7 @@ export function cleanFields(body: unknown): Record<string, unknown> {
   return Object.fromEntries(Object.entries(body).filter(([k]) => !RESERVED_FIELDS.has(k)));
 }
 
-export type RecordDTO = Record<string, unknown> & { id: number; createdAt: string; updatedAt: string };
+export type RecordDTO = DataRecord;
 
 export const toRecordDTO = (r: AppRecord): RecordDTO => ({
   ...r.data,
@@ -117,8 +118,6 @@ export async function deleteRecord(db: Db, scope: AppScope, collection: string, 
     .returning({ id: appRecords.id });
   if (deleted.length === 0) throw notFound("Record");
 }
-
-export type CollectionSummary = { name: string; count: number; records: RecordDTO[] };
 
 /** Owner view for the workspace Data panel: every collection with its newest records. */
 export async function summarizeData(db: Db, projectId: number, env: AppEnv): Promise<CollectionSummary[]> {

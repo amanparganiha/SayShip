@@ -46,4 +46,9 @@ export type VersionDetail = VersionSummary & { files: GeneratedFile[] };
 
 export type ProjectResponse = { project: ProjectDetail; versions: VersionSummary[] };
 
+/** A record stored by a generated app: its own fields plus server-owned id/timestamps. */
+export type DataRecord = Record<string, unknown> & { id: number; createdAt: string; updatedAt: string };
+export type CollectionSummary = { name: string; count: number; records: DataRecord[] };
+export type DataResponse = { env: "preview" | "live"; collections: CollectionSummary[] };
+
 export type ApiErrorBody = { error: string; message: string; details?: unknown };
