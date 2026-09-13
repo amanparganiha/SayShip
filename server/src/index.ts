@@ -36,5 +36,5 @@ const app = createApp(
 );
 
 app.listen(env.PORT, "0.0.0.0", () => {
-  console.log(`PromptShip listening on :${env.PORT} (LLM: ${env.llmProvider})`);
+  console.log(`SayShip listening on :${env.PORT} (LLM: ${env.llmProvider})`);
 });

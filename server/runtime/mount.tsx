@@ -1,5 +1,5 @@
 /**
- * Bundled into every generated app as the virtual module "promptship/runtime": renders the
+ * Bundled into every generated app as the virtual module "sayship/runtime": renders the
  * generated App inside an error boundary and reports failures to the workspace.
  */
 import { Component, type ComponentType, type ErrorInfo, type ReactNode } from "react";
@@ -15,7 +15,7 @@ class ErrorBoundary extends Component<{ children: ReactNode }, BoundaryState> {
   }
 
   override componentDidCatch(error: Error, info: ErrorInfo) {
-    window.__promptship?.reportError(error, { componentStack: info.componentStack ?? undefined });
+    window.__sayship?.reportError(error, { componentStack: info.componentStack ?? undefined });
   }
 
   override render() {
@@ -44,13 +44,13 @@ export function mount(App: ComponentType | undefined) {
   if (!container) return;
 
   if (typeof App !== "function" && (typeof App !== "object" || App === null)) {
-    window.__promptship?.reportError(new Error("App.jsx must default-export a React component."));
+    window.__sayship?.reportError(new Error("App.jsx must default-export a React component."));
     return;
   }
 
   const root = createRoot(container, {
     onUncaughtError: (error, info) =>
-      window.__promptship?.reportError(error, { componentStack: info.componentStack ?? undefined }),
+      window.__sayship?.reportError(error, { componentStack: info.componentStack ?? undefined }),
   });
   root.render(
     <ErrorBoundary>
@@ -58,5 +58,5 @@ export function mount(App: ComponentType | undefined) {
     </ErrorBoundary>,
   );
   // "ready" = first render finished without errors; lets the workspace reset its auto-fix counter.
-  window.setTimeout(() => window.__promptship?.ready(), 500);
+  window.setTimeout(() => window.__sayship?.ready(), 500);
 }

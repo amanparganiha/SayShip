@@ -2,7 +2,7 @@ import type { GeneratedFile, Plan } from "@shared/schemas";
 
 /**
  * The deterministic app the mock LLM "generates". It exercises the real pipeline end to end:
- * multi-file imports, the promptship data SDK, Tailwind, forms and optimistic updates.
+ * multi-file imports, the sayship data SDK, Tailwind, forms and optimistic updates.
  */
 
 export const MOCK_PLAN: Plan = {
@@ -54,7 +54,7 @@ export function taskBoardApp(options: { footer?: string; broken?: boolean } = {}
     : "";
 
   return `import { useState } from "react";
-import { useCollection } from "promptship";
+import { useCollection } from "sayship";
 import TaskItem from "./components/TaskItem";
 
 export default function App() {

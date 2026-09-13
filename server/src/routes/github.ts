@@ -8,7 +8,7 @@ import { users } from "../db/schema";
 import { exchangeCode } from "../export/github";
 import { HttpError } from "../lib/http";
 
-const STATE_COOKIE = "ps_gh_oauth";
+const STATE_COOKIE = "sayship_gh_oauth";
 const RETURN_TO_RE = /^\/projects\/\d+$/;
 
 /**

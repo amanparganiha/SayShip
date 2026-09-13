@@ -14,19 +14,19 @@ jobs:
       postgres:
         image: postgres:16-alpine
         env:
-          POSTGRES_USER: promptship
-          POSTGRES_PASSWORD: promptship
-          POSTGRES_DB: promptship_test
+          POSTGRES_USER: sayship
+          POSTGRES_PASSWORD: sayship
+          POSTGRES_DB: sayship_test
         ports:
           - 5432:5432
         options: >-
-          --health-cmd "pg_isready -U promptship"
+          --health-cmd "pg_isready -U sayship"
           --health-interval 2s
           --health-timeout 3s
           --health-retries 20
 
     env:
-      TEST_DATABASE_URL: postgres://promptship:promptship@localhost:5432/promptship_test
+      TEST_DATABASE_URL: postgres://sayship:sayship@localhost:5432/sayship_test
 
     steps:
       - uses: actions/checkout@v4

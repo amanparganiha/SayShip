@@ -1,6 +1,6 @@
 /** Environment for the vitest run. Tests use their own database so they never touch dev data. */
 export const TEST_DATABASE_URL =
-  process.env.TEST_DATABASE_URL ?? "postgres://promptship:promptship@localhost:5432/promptship_test";
+  process.env.TEST_DATABASE_URL ?? "postgres://sayship:sayship@localhost:5432/sayship_test";
 
 export const testEnv = {
   NODE_ENV: "test",

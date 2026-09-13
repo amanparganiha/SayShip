@@ -7,7 +7,7 @@ import DataPanel from "./DataPanel";
 import ErrorBanner from "./ErrorBanner";
 
 /**
- * The live app, in an opaque-origin sandbox (no allow-same-origin): it can't touch PromptShip's
+ * The live app, in an opaque-origin sandbox (no allow-same-origin): it can't touch SayShip's
  * cookies or API. It talks to us only through postMessage (ready / runtime-error / build-error),
  * which is checked by source window, since a sandboxed frame's origin is "null".
  */

@@ -1,12 +1,12 @@
 /**
- * Runs first in every generated-app page. Reports errors to the PromptShip workspace (the parent
+ * Runs first in every generated-app page. Reports errors to the SayShip workspace (the parent
  * window) so the agent can fix them, and shims APIs the opaque-origin sandbox takes away.
  */
 import type { BuildErrorInfo, PreviewMessage } from "../../shared/preview";
 
 type Outgoing = PreviewMessage extends infer M ? (M extends PreviewMessage ? Omit<M, "source"> : never) : never;
 
-const config = window.__PROMPTSHIP__;
+const config = window.__SAYSHIP__;
 const inFrame = window.parent !== window;
 let errorCount = 0;
 
@@ -15,7 +15,7 @@ function post(message: Outgoing) {
   try {
     // The sandboxed page has an opaque origin, so "*" is the only usable target. The parent
     // verifies event.source instead of the origin.
-    window.parent.postMessage({ source: "promptship", ...message }, "*");
+    window.parent.postMessage({ source: "sayship", ...message }, "*");
   } catch {
     // Ignore: reporting must never break the app.
   }
@@ -73,10 +73,10 @@ const PANEL_STYLE =
 
 let toastTimer: number | undefined;
 function showToast(message: string) {
-  let toast = document.getElementById("__promptship_toast");
+  let toast = document.getElementById("__sayship_toast");
   if (!toast) {
     toast = document.createElement("div");
-    toast.id = "__promptship_toast";
+    toast.id = "__sayship_toast";
     toast.setAttribute(
       "style",
       "position:fixed;left:12px;bottom:12px;z-index:2147483647;max-width:min(520px,calc(100vw - 24px));padding:8px 12px;border-radius:6px;background:#7f1d1d;color:#fff;font:12px/1.4 system-ui,sans-serif;box-shadow:0 4px 16px rgba(0,0,0,.3)",
@@ -118,4 +118,4 @@ for (const name of ["localStorage", "sessionStorage"] as const) {
 window.addEventListener("error", (event) => reportError(event.error ?? event.message));
 window.addEventListener("unhandledrejection", (event) => reportError(event.reason));
 
-window.__promptship = { reportError, ready, buildFailed };
+window.__sayship = { reportError, ready, buildFailed };

@@ -1,8 +1,10 @@
-# PromptShip — Implementation Plan
+# SayShip — Implementation Plan
+
+> Renamed from **PromptShip** to **SayShip** on 2026-09-13: the original name is already used by an existing product (promptship.dev). This plan was written before the rename; names below have been updated.
 
 ## Context
 
-`C:\PromptShip` is empty (no git repo yet). The machine has Node 24, npm 11, git and Docker. The goal is to build **PromptShip**, the AI full-stack app builder described in the resume and build guide, as the Replit New Grad 2027 submission. **The resume bullet is the acceptance spec.** Everything it claims has to be true of the shipped app:
+The project folder is empty (no git repo yet). The machine has Node 24, npm 11, git and Docker. The goal is to build **SayShip**, the AI full-stack app builder described in the resume and build guide, as the Replit New Grad 2027 submission. **The resume bullet is the acceptance spec.** Everything it claims has to be true of the shipped app:
 
 - A natural-language prompt goes through a schema/API/UI plan, then streamed code generation, then a file tree, code viewer and live sandboxed preview.
 - Projects are saved, versions are kept, and users sign in.
@@ -45,7 +47,7 @@ Express 5 (single port)                              ▼
 
 ```
 package.json  tsconfig.base.json  drizzle.config.ts  vitest.config.ts  playwright.config.ts
-docker-compose.yml  docker/init.sql (creates promptship + promptship_test)  .env.example  .gitignore  .gitattributes (eol=lf)
+docker-compose.yml  docker/init.sql (creates sayship + sayship_test)  .env.example  .gitignore  .gitattributes (eol=lf)
 .replit  .github/workflows/ci.yml  scripts/build.mjs  README.md
 shared/      schemas.ts (zod: Plan, EditPlan, GeneratedFile, path rules) · events.ts (RunEvent union) · api.ts (DTOs)
 server/drizzle/            generated SQL migrations (committed)
@@ -55,7 +57,7 @@ server/src/  index.ts (prod entry) · dev.ts (dev entry + Vite middleware) · ap
   routes/    auth · projects · generate · preview · publish · data · export · github · runtime · health
   agent/     prompts.ts · planner.ts · writer.ts · editor.ts · pipeline.ts
   llm/       types.ts (LlmClient) · openai.ts · mock.ts · index.ts
-  sandbox/   bundle.ts (esbuild + virtual FS plugin) · shell.ts (HTML) · runtimeAssets.ts · sdk.js (promptship module) · bridge.js (error reporter)
+  sandbox/   bundle.ts (esbuild + virtual FS plugin) · shell.ts (HTML) · runtimeAssets.ts · sdk.js (sayship module) · bridge.js (error reporter)
   export/    viteProject.ts · zip.ts (fflate) · github.ts (REST, git data API)
   lib/       sse.ts · http.ts · quota.ts · lease.ts · slug.ts
 client/      index.html · vite.config.ts · src/{main.tsx, App.tsx, index.css}
@@ -139,15 +141,15 @@ The guide's prompts, Drizzle schema, preview-route idea and App shell layout are
 - **`bundleApp(files, mode)`** uses esbuild `build` with `write:false`, format iife, `jsx:'automatic'` (`jsxDev` in preview) and a virtual-FS plugin:
   - Relative imports resolve among the generated files (trying extensions `.jsx` and `.js`).
   - `react`, `react-dom/client`, `react/jsx-runtime` and `react/jsx-dev-runtime` map to the globals from the runtime bundle.
-  - `promptship` maps to `sdk.js`.
-  - Any other import is a clear build error ("only react and promptship are available").
+  - `sayship` maps to `sdk.js`.
+  - Any other import is a clear build error ("only react and sayship are available").
   - Errors come back as `{file,line,column,message,lineText}`.
   - The plugin never touches the disk, so the server never runs user code.
 - **Results are cached** in an in-memory LRU keyed by generation id and mode (generations are immutable).
 - **`runtimeAssets`:** when the server starts, esbuild bundles React 19 into a dev variant (for preview, so error messages are readable for the fixer) and a prod variant (for `/p`). It also serves `@tailwindcss/browser`. Assets get content-hashed names and immutable caching, with `Access-Control-Allow-Origin: *` and `Cross-Origin-Resource-Policy: cross-origin` so opaque-origin pages can load them. The shell loads them with `<script crossorigin="anonymous">` so runtime errors aren't masked as "Script error."
 - **`shell.ts`** builds the HTML page:
-  - `window.__PROMPTSHIP__ = {apiBase, appKey, env}`.
-  - A bridge script (`window.onerror`, `unhandledrejection`, React 19 `onUncaughtError`/`onCaughtError`, and an ErrorBoundary that reports `componentStack`) posts `{source:'promptship', type:'ready'|'runtime-error'|'build-error'}` to the parent.
+  - `window.__SAYSHIP__ = {apiBase, appKey, env}`.
+  - A bridge script (`window.onerror`, `unhandledrejection`, React 19 `onUncaughtError`/`onCaughtError`, and an ErrorBoundary that reports `componentStack`) posts `{source:'sayship', type:'ready'|'runtime-error'|'build-error'}` to the parent.
   - Storage shims, in case generated code uses localStorage anyway.
   - Build errors render as an overlay and are also posted to the parent.
   - The inlined bundle is escaped (`</script` becomes `<\/script`).
@@ -167,7 +169,7 @@ The guide's prompts, Drizzle schema, preview-route idea and App shell layout are
 ## Auth, quotas, security
 
 - **Passwords:** scrypt from `node:crypto` (no native build step), salted, compared with `timingSafeEqual`.
-- **Sessions:** a random 32-byte token in cookie `ps_session` (httpOnly, SameSite=Lax, Secure in prod, 30 days). The database stores only its sha256.
+- **Sessions:** a random 32-byte token in cookie `sayship_session` (httpOnly, SameSite=Lax, Secure in prod, 30 days). The database stores only its sha256.
 - **Guest flow:** "Continue as guest" creates `guest_xxxxxx` so reviewers can try it without signing up. An upgrade endpoint turns a guest into a full account.
 - **CSRF:** mutating `/api` requests must send an `Origin` that matches the host. Sandboxed pages send `Origin: null` and are rejected.
 - **Rate limits:** express-rate-limit on auth routes and on guest creation (5 per hour per IP), so the OpenAI key can't be drained through throwaway guests.
@@ -186,10 +188,10 @@ The guide's prompts, Drizzle schema, preview-route idea and App shell layout are
   - This is the honest version of "one-click deployment".
 - **ZIP export:** `fflate` packs a Vite project containing:
   - `package.json` pinned to the React version actually used in preview, plus Vite and Tailwind v4
-  - `index.html`, `vite.config.js` (alias `promptship` → `/src/promptship.js`) and `src/main.jsx`
+  - `index.html`, `vite.config.js` (alias `sayship` → `/src/sayship.js`) and `src/main.jsx`
   - the generated files, unchanged
-  - `src/promptship.js`: the same `useCollection` API backed by localStorage, so the project runs anywhere
-  - `promptship.json` (prompt, plan, version, model) and a README
+  - `src/sayship.js`: the same `useCollection` API backed by localStorage, so the project runs anywhere
+  - `sayship.json` (prompt, plan, version, model) and a README
 - **GitHub push:**
   - OAuth web flow with `public_repo` scope, a state cookie and an env-configured `APP_URL` callback.
   - Creates the repo with `auto_init`, then builds a tree with inline contents, a commit and a ref update. Retries while the default-branch ref lags.
@@ -265,7 +267,7 @@ run = ["npm", "run", "start"]
 ## Verification
 
 - **Each milestone:**
-  - `npm run typecheck`, `npm test` (vitest against `promptship_test` in Docker)
+  - `npm run typecheck`, `npm test` (vitest against `sayship_test` in Docker)
   - `npm run dev`, then check the new behavior at http://localhost:3000 (Playwright or curl)
 - **Playwright E2E** (production build, `LLM_PROVIDER=mock`, port 3100):
   1. Guest sign-in; register, logout, login.
@@ -273,7 +275,7 @@ run = ["npm", "run", "start"]
   3. Refine to v2, switch back to v1, restore to v3; the preview matches each version.
   4. A `[broken]` prompt shows the error banner; the fix produces v2 and the preview renders cleanly.
   5. Publish: `/p/:slug` renders in a logged-out context and its CSP header contains `sandbox`. After unpublishing it returns 404.
-  6. ZIP download contains `package.json`, `src/App.jsx` and `src/promptship.js`.
+  6. ZIP download contains `package.json`, `src/App.jsx` and `src/sayship.js`.
   7. User B gets 404 on user A's project and data.
 - **Real LLM:**
   - With `OPENAI_API_KEY` set, run the 3 example prompts end to end, including one iterate and one forced fix.

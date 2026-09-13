@@ -49,7 +49,7 @@ test("exports a runnable Vite project as a ZIP", async ({ page }) => {
 
   const files = unzipSync(new Uint8Array(await readFile((await download.path())!)));
   expect(Object.keys(files)).toEqual(
-    expect.arrayContaining(["task-board/package.json", "task-board/src/App.jsx", "task-board/src/promptship.js"]),
+    expect.arrayContaining(["task-board/package.json", "task-board/src/App.jsx", "task-board/src/sayship.js"]),
   );
   expect(JSON.parse(strFromU8(files["task-board/package.json"]!)).scripts.dev).toBe("vite");
 });

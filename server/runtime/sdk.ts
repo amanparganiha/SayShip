@@ -1,10 +1,10 @@
 /**
- * The "promptship" module that generated apps import:
+ * The "sayship" module that generated apps import:
  *
- *   import { useCollection } from "promptship";
+ *   import { useCollection } from "sayship";
  *   const { items, loading, error, create, update, remove } = useCollection("tasks");
  *
- * Each collection is backed by the app's own data API (/data/:appKey/:collection) on PromptShip's
+ * Each collection is backed by the app's own data API (/data/:appKey/:collection) on SayShip's
  * Postgres. One store per collection is shared by every component that uses it, so they stay in
  * sync; writes are optimistic and roll back if the server rejects them.
  */
@@ -15,7 +15,7 @@ type Fields = Record<string, unknown>;
 
 type State = { items: AppRecord[]; loaded: boolean; loading: boolean; error: string | null };
 
-const config = window.__PROMPTSHIP__ ?? { apiBase: "", appKey: "", env: "preview" as const, appName: "" };
+const config = window.__SAYSHIP__ ?? { apiBase: "", appKey: "", env: "preview" as const, appName: "" };
 
 async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
   const res = await fetch(`${config.apiBase}/data/${encodeURIComponent(config.appKey)}${path}`, {

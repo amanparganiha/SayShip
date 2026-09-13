@@ -7,13 +7,13 @@ import { RUNTIME_SOURCE_DIR } from "./runtimeAssets";
 export type BundleMode = "preview" | "live";
 export type BundleResult = { ok: true; code: string } | { ok: false; errors: BuildErrorInfo[] };
 
-/** Bare imports generated code may use, mapped to keys of window.__ps_modules (see runtimeAssets). */
+/** Bare imports generated code may use, mapped to keys of window.__sayship_modules (see runtimeAssets). */
 const GLOBAL_MODULES = new Set(["react", "react-dom", "react-dom/client", "react/jsx-runtime", "react/jsx-dev-runtime"]);
 
 const SDK_FILE = path.join(RUNTIME_SOURCE_DIR, "sdk.ts");
 const MOUNT_FILE = path.join(RUNTIME_SOURCE_DIR, "mount.tsx");
-const ENTRY = "__promptship_entry__.jsx";
-const ENTRY_SOURCE = `import App from "./${ENTRY_FILE}";\nimport { mount } from "promptship/runtime";\nmount(App);\n`;
+const ENTRY = "__sayship_entry__.jsx";
+const ENTRY_SOURCE = `import App from "./${ENTRY_FILE}";\nimport { mount } from "sayship/runtime";\nmount(App);\n`;
 const EXTENSIONS = ["", ".jsx", ".js", "/index.jsx", "/index.js"];
 
 const fail = (text: string): OnResolveResult => ({ errors: [{ text }] });
@@ -21,8 +21,8 @@ const fail = (text: string): OnResolveResult => ({ errors: [{ text }] });
 /** Resolves every import made by generated code. Nothing here ever touches the real file system. */
 function resolveFromApp(spec: string, importer: string, files: Map<string, string>): OnResolveResult {
   if (GLOBAL_MODULES.has(spec)) return { path: spec, namespace: "global" };
-  if (spec === "promptship") return { path: SDK_FILE };
-  if (spec === "promptship/runtime" && importer === ENTRY) return { path: MOUNT_FILE };
+  if (spec === "sayship") return { path: SDK_FILE };
+  if (spec === "sayship/runtime" && importer === ENTRY) return { path: MOUNT_FILE };
   if (spec.endsWith(".css")) return fail(`CSS files aren't supported ("${spec}"). Style with Tailwind classes instead.`);
 
   if (spec.startsWith("./") || spec.startsWith("../")) {
@@ -36,15 +36,15 @@ function resolveFromApp(spec: string, importer: string, files: Map<string, strin
   }
 
   return fail(
-    `Package "${spec}" is not available. Generated apps can import only "react", "promptship" and their own files.`,
+    `Package "${spec}" is not available. Generated apps can import only "react", "sayship" and their own files.`,
   );
 }
 
 function appPlugin(files: Map<string, string>): Plugin {
   return {
-    name: "promptship-virtual-app",
+    name: "sayship-virtual-app",
     setup(b) {
-      b.onResolve({ filter: /^promptship:entry$/ }, () => ({ path: ENTRY, namespace: "app" }));
+      b.onResolve({ filter: /^sayship:entry$/ }, () => ({ path: ENTRY, namespace: "app" }));
       // Catch-all for imports *from* generated files, so none of them can reach the disk.
       b.onResolve({ filter: /.*/, namespace: "app" }, (args) => resolveFromApp(args.path, args.importer, files));
       // The runtime files on disk (sdk, mount) import React too.
@@ -53,7 +53,7 @@ function appPlugin(files: Map<string, string>): Plugin {
       );
 
       b.onLoad({ filter: /.*/, namespace: "global" }, (args) => ({
-        contents: `module.exports = window.__ps_modules[${JSON.stringify(args.path)}];`,
+        contents: `module.exports = window.__sayship_modules[${JSON.stringify(args.path)}];`,
         loader: "js",
       }));
       b.onLoad({ filter: /.*/, namespace: "app" }, (args) => ({
@@ -70,7 +70,7 @@ function toBuildError(m: Message): BuildErrorInfo {
     file = file.replace(/^app:/, "");
     if (file === ENTRY) file = ENTRY_FILE;
     // Never leak server paths for errors inside our own runtime files.
-    else if (path.isAbsolute(file) || file.includes("\\")) file = `promptship/${path.basename(file)}`;
+    else if (path.isAbsolute(file) || file.includes("\\")) file = `sayship/${path.basename(file)}`;
   }
   return {
     file,
@@ -108,7 +108,7 @@ export async function bundleApp(files: GeneratedFile[], mode: BundleMode): Promi
 
   try {
     const result = await build({
-      entryPoints: ["promptship:entry"],
+      entryPoints: ["sayship:entry"],
       bundle: true,
       write: false,
       outfile: "app.js",

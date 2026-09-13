@@ -1,7 +1,7 @@
 import { createCipheriv, createDecipheriv, hkdfSync, randomBytes } from "node:crypto";
 
 /** AES-256-GCM for secrets at rest (GitHub tokens). The key is derived from SESSION_SECRET. */
-const keyFrom = (secret: string) => Buffer.from(hkdfSync("sha256", secret, "promptship", "token-encryption", 32));
+const keyFrom = (secret: string) => Buffer.from(hkdfSync("sha256", secret, "sayship", "token-encryption", 32));
 
 export function encryptSecret(plain: string, secret: string): string {
   const iv = randomBytes(12);

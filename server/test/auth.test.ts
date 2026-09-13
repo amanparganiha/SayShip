@@ -36,7 +36,7 @@ describe("auth routes", () => {
       .send({ username: uniqueName(), password: PASSWORD })
       .expect(201);
     const cookie = String(res.headers["set-cookie"]);
-    expect(cookie).toMatch(/ps_session=/);
+    expect(cookie).toMatch(/sayship_session=/);
     expect(cookie).toMatch(/HttpOnly/);
     expect(cookie).toMatch(/SameSite=Lax/);
   });
@@ -93,20 +93,20 @@ describe("CSRF origin check", () => {
   it("blocks cross-origin and sandboxed (null) origins on writes", async () => {
     const evil = await request(app)
       .post("/api/auth/guest")
-      .set("Host", "promptship.test")
+      .set("Host", "sayship.test")
       .set("Origin", "https://evil.example");
     expect(evil.status).toBe(403);
     expect(evil.body.error).toBe("bad_origin");
 
-    const sandboxed = await request(app).post("/api/auth/guest").set("Host", "promptship.test").set("Origin", "null");
+    const sandboxed = await request(app).post("/api/auth/guest").set("Host", "sayship.test").set("Origin", "null");
     expect(sandboxed.status).toBe(403);
   });
 
   it("allows same-origin writes and all reads", async () => {
     await request(app)
       .post("/api/auth/guest")
-      .set("Host", "promptship.test")
-      .set("Origin", "https://promptship.test")
+      .set("Host", "sayship.test")
+      .set("Origin", "https://sayship.test")
       .expect(201);
     await request(app).get("/api/auth/me").set("Origin", "https://evil.example").expect(200);
   });

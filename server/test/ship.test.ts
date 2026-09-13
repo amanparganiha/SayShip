@@ -13,7 +13,7 @@ import { registeredAgent, setupTestApp } from "./helpers";
 
 const main = setupTestApp();
 const withGitHub = setupTestApp({
-  env: { GITHUB_CLIENT_ID: "gh-client", GITHUB_CLIENT_SECRET: "gh-secret", APP_URL: "http://promptship.test" },
+  env: { GITHUB_CLIENT_ID: "gh-client", GITHUB_CLIENT_SECRET: "gh-secret", APP_URL: "http://sayship.test" },
 });
 afterAll(() => Promise.all([main.pool.end(), withGitHub.pool.end()]));
 afterEach(() => vi.unstubAllGlobals());
@@ -82,12 +82,12 @@ describe("ZIP export", () => {
         "README.md",
         "index.html",
         "package.json",
-        "promptship.json",
+        "sayship.json",
         "src/App.jsx",
         "src/components/TaskItem.jsx",
         "src/index.css",
         "src/main.jsx",
-        "src/promptship.js",
+        "src/sayship.js",
         "vite.config.js",
       ].map((f) => `task-board/${f}`),
     );
@@ -95,7 +95,7 @@ describe("ZIP export", () => {
     const pkg = JSON.parse(strFromU8(files["task-board/package.json"]!));
     expect(pkg.dependencies.react).toMatch(/^\^19\./);
     expect(pkg.devDependencies.vite).toMatch(/^\^\d+\./);
-    expect(JSON.parse(strFromU8(files["task-board/promptship.json"]!))).toMatchObject({ generator: "PromptShip", version: 1 });
+    expect(JSON.parse(strFromU8(files["task-board/sayship.json"]!))).toMatchObject({ generator: "SayShip", version: 1 });
   });
 
   it("builds with Vite as-is (the export is reproducible)", async () => {
@@ -132,7 +132,7 @@ describe("GitHub export", () => {
     const authorize = new URL(connect.headers.location!);
     expect(`${authorize.origin}${authorize.pathname}`).toBe("https://github.com/login/oauth/authorize");
     expect(authorize.searchParams.get("client_id")).toBe("gh-client");
-    expect(authorize.searchParams.get("redirect_uri")).toBe("http://promptship.test/api/github/callback");
+    expect(authorize.searchParams.get("redirect_uri")).toBe("http://sayship.test/api/github/callback");
     expect(authorize.searchParams.get("scope")).toBe("public_repo");
     const state = authorize.searchParams.get("state")!;
 
@@ -172,7 +172,7 @@ describe("GitHub export", () => {
 
     const tree = calls.find((c) => c.url.endsWith("/git/trees"))!.body as { base_tree: string; tree: { path: string }[] };
     expect(tree.base_tree).toBe("base-tree");
-    expect(tree.tree.map((t) => t.path)).toEqual(expect.arrayContaining(["package.json", "src/App.jsx", "src/promptship.js"]));
+    expect(tree.tree.map((t) => t.path)).toEqual(expect.arrayContaining(["package.json", "src/App.jsx", "src/sayship.js"]));
     expect(calls.find((c) => c.url.includes("/git/refs/heads/main"))!.body).toEqual({ sha: "new-commit" });
   });
 

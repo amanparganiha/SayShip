@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { generateApp, previewFrame, signInAsGuest } from "./helpers";
 
-test("generated code runs in an opaque origin with no access to PromptShip", async ({ page }) => {
+test("generated code runs in an opaque origin with no access to SayShip", async ({ page }) => {
   await signInAsGuest(page);
   await generateApp(page, "A task board");
   await expect(previewFrame(page).getByRole("heading", { name: "Task board" })).toBeVisible();

@@ -28,5 +28,5 @@ const vite = await createViteServer({
 const app = createApp({ env, db, llm: createLlm(env) }, { frontend: (app) => app.use(vite.middlewares) });
 httpServer.on("request", app);
 httpServer.listen(env.PORT, "0.0.0.0", () => {
-  console.log(`PromptShip dev server on http://localhost:${env.PORT} (LLM: ${env.llmProvider})`);
+  console.log(`SayShip dev server on http://localhost:${env.PORT} (LLM: ${env.llmProvider})`);
 });

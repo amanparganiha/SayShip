@@ -21,7 +21,7 @@ async function gh<T = Json>(token: string, method: string, path: string, body?: 
       Authorization: `Bearer ${token}`,
       Accept: "application/vnd.github+json",
       "X-GitHub-Api-Version": "2022-11-28",
-      "User-Agent": "PromptShip",
+      "User-Agent": "SayShip",
       ...(body === undefined ? {} : { "Content-Type": "application/json" }),
     },
     body: body === undefined ? undefined : JSON.stringify(body),
@@ -40,7 +40,7 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 export async function exchangeCode(opts: { clientId: string; clientSecret: string; code: string; redirectUri: string }) {
   const res = await fetch("https://github.com/login/oauth/access_token", {
     method: "POST",
-    headers: { Accept: "application/json", "Content-Type": "application/json", "User-Agent": "PromptShip" },
+    headers: { Accept: "application/json", "Content-Type": "application/json", "User-Agent": "SayShip" },
     body: JSON.stringify({
       client_id: opts.clientId,
       client_secret: opts.clientSecret,

@@ -29,7 +29,7 @@ export default function Dashboard() {
         <div className="mx-auto max-w-3xl px-6 pb-16 pt-14">
           <h1 className="mb-2 text-center text-3xl font-semibold tracking-tight">What do you want to build?</h1>
           <p className="mb-8 text-center text-sm text-neutral-400">
-            PromptShip plans it, writes the code, and runs it live with its own database.
+            SayShip plans it, writes the code, and runs it live with its own database.
           </p>
           <PromptInput onSubmit={(prompt) => create.mutate(prompt)} loading={create.isPending} />
           <ErrorText>{create.error ? errorMessage(create.error) : null}</ErrorText>

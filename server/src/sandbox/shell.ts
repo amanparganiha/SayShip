@@ -1,5 +1,5 @@
 import type { Response } from "express";
-import type { PromptShipConfig } from "@shared/preview";
+import type { SayShipConfig } from "@shared/preview";
 import type { BundleMode, BundleResult } from "./bundle";
 import type { RuntimeAssets } from "./runtimeAssets";
 
@@ -20,7 +20,7 @@ export const escapeInlineScript = (code: string) =>
 
 /** The HTML page a generated app runs in: runtime assets + the app bundle (or its build errors). */
 export function renderShell(opts: {
-  config: PromptShipConfig;
+  config: SayShipConfig;
   bundle: BundleResult;
   assets: RuntimeAssets;
   mode: BundleMode;
@@ -29,7 +29,7 @@ export function renderShell(opts: {
   const react = mode === "preview" ? assets.urls.reactPreview : assets.urls.reactLive;
   const app = bundle.ok
     ? `<script>${escapeInlineScript(bundle.code)}</script>`
-    : `<script>window.__promptship.buildFailed(${jsonForScript(bundle.errors)});</script>`;
+    : `<script>window.__sayship.buildFailed(${jsonForScript(bundle.errors)});</script>`;
 
   // crossorigin="anonymous": the page has an opaque origin, and CORS-enabled script loads keep
   // error messages from being masked as "Script error." in window.onerror.
@@ -39,7 +39,7 @@ export function renderShell(opts: {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${escapeHtml(config.appName)}</title>
-<script>window.__PROMPTSHIP__ = ${jsonForScript(config)};</script>
+<script>window.__SAYSHIP__ = ${jsonForScript(config)};</script>
 <script src="${assets.urls.bridge}" crossorigin="anonymous"></script>
 <script src="${assets.urls.tailwind}" crossorigin="anonymous"></script>
 <script src="${react}" crossorigin="anonymous"></script>
@@ -54,7 +54,7 @@ ${app}
 /**
  * Sends generated-app HTML inside an opaque-origin sandbox. The CSP `sandbox` directive applies
  * even when the page is opened directly (not in our iframe), so generated code can never read
- * PromptShip cookies/storage or make same-origin requests with the user's session.
+ * SayShip cookies/storage or make same-origin requests with the user's session.
  * `allow-forms` is required for React onSubmit handlers to fire.
  */
 export function sendSandboxed(res: Response, html: string, origin: string) {

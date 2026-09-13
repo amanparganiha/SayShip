@@ -25,7 +25,7 @@ const require = createRequire(import.meta.url);
 
 /**
  * React is bundled once into an IIFE that exposes the modules generated apps may import on
- * window.__ps_modules. Generated bundles map `import ... from "react"` onto that object, so
+ * window.__sayship_modules. Generated bundles map `import ... from "react"` onto that object, so
  * every preview shares one cacheable React file instead of re-bundling it.
  */
 async function bundleReact(mode: "development" | "production"): Promise<string> {
@@ -33,7 +33,7 @@ async function bundleReact(mode: "development" | "production"): Promise<string> 
   if (mode === "development") modules.push("react/jsx-dev-runtime");
   const contents =
     modules.map((m, i) => `import * as m${i} from ${JSON.stringify(m)};`).join("\n") +
-    `\nwindow.__ps_modules = {${modules.map((m, i) => `${JSON.stringify(m)}: m${i}`).join(", ")}};\n`;
+    `\nwindow.__sayship_modules = {${modules.map((m, i) => `${JSON.stringify(m)}: m${i}`).join(", ")}};\n`;
 
   const result = await build({
     stdin: { contents, resolveDir: process.cwd(), sourcefile: `react-${mode}.js`, loader: "js" },

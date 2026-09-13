@@ -1,5 +1,5 @@
 /**
- * Standalone version of PromptShip's data SDK, included in exported projects.
+ * Standalone version of SayShip's data SDK, included in exported projects.
  *
  * Same API as the hosted SDK (useCollection / collection), but records live in this browser's
  * localStorage, so the app runs anywhere with no backend. To share data between users, replace
@@ -7,7 +7,7 @@
  */
 import { useMemo, useSyncExternalStore } from "react";
 
-const PREFIX = "promptship:";
+const PREFIX = "sayship:";
 const cache = new Map();
 const listeners = new Map();
 let lastId = Date.now();

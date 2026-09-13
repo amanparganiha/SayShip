@@ -14,7 +14,7 @@ export function Logo() {
         <rect width="32" height="32" rx="7" fill="#171717" />
         <path d="M16 5 L25 21 H18 L16 27 L14 21 H7 Z" fill="#818cf8" />
       </svg>
-      PromptShip
+      SayShip
     </Link>
   );
 }

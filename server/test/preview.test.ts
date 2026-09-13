@@ -47,7 +47,7 @@ describe("preview pages", () => {
   it("renders build errors instead of the app", async () => {
     const { owner, project } = await projectWithVersion([{ path: "App.jsx", content: "export default function App( {" }]);
     const res = await owner.agent.get(`/preview/${project.id}/1`).expect(200);
-    expect(res.text).toContain("window.__promptship.buildFailed(");
+    expect(res.text).toContain("window.__sayship.buildFailed(");
   });
 });
 

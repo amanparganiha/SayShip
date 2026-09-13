@@ -15,7 +15,7 @@ import {
 } from "../services/appData";
 
 /**
- * The per-app backend generated apps talk to through the `promptship` SDK:
+ * The per-app backend generated apps talk to through the `sayship` SDK:
  *   GET/POST /data/:appKey/:collection   PATCH/DELETE /data/:appKey/:collection/:id
  *
  * Called from opaque-origin sandboxed pages, so it is CORS-open, never reads cookies, and is

@@ -13,7 +13,7 @@ export default function App() {
   if (me.isError) {
     return (
       <div className="flex h-full items-center justify-center">
-        <ErrorText>Can't reach the PromptShip API: {errorMessage(me.error)}</ErrorText>
+        <ErrorText>Can't reach the SayShip API: {errorMessage(me.error)}</ErrorText>
       </div>
     );
   }

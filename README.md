@@ -1,9 +1,9 @@
-# PromptShip
+# SayShip
 
-**Describe an app in plain English. PromptShip plans it, streams the code file by file, runs it in a sandboxed live preview with its own database-backed API, fixes its own runtime errors, and publishes it to a public URL.**
+**Describe an app in plain English. SayShip plans it, streams the code file by file, runs it in a sandboxed live preview with its own database-backed API, fixes its own runtime errors, and publishes it to a public URL.**
 
 <!-- Replace with your links after deploying: -->
-**Live demo:** `https://<your-app>.replit.app` · **Replit project:** `https://replit.com/@<you>/promptship` · **Demo video:** _add link_
+**Live demo:** `https://<your-app>.replit.app` · **Replit project:** `https://replit.com/@<you>/sayship` · **Demo video:** _add link_
 
 ```
 "A habit tracker with daily check-ins and streaks"
@@ -17,8 +17,8 @@
 ## What it does
 
 - **Prompt → plan → code.** A planner agent turns the idea into a structured plan (data collections with fields, features, a file list in dependency order) using OpenAI Structured Outputs. A writer agent then streams each file over Server-Sent Events, so you watch the file tree fill and the code appear live.
-- **Real full-stack apps.** Generated React apps persist data through a `useCollection()` hook backed by a per-app CRUD API on PromptShip's Postgres, with separate **preview** and **live** data (like dev/prod databases).
-- **Sandboxed live preview.** The server bundles the generated files with esbuild over an in-memory file system. They run in an opaque-origin sandbox (CSP `sandbox` + iframe `sandbox`), so they can't touch PromptShip's cookies or API.
+- **Real full-stack apps.** Generated React apps persist data through a `useCollection()` hook backed by a per-app CRUD API on SayShip's Postgres, with separate **preview** and **live** data (like dev/prod databases).
+- **Sandboxed live preview.** The server bundles the generated files with esbuild over an in-memory file system. They run in an opaque-origin sandbox (CSP `sandbox` + iframe `sandbox`), so they can't touch SayShip's cookies or API.
 - **Self-healing.**
   - A failed build check triggers a repair pass that uses the compiler's `file:line` errors.
   - Runtime errors from the preview (`window.onerror`, unhandled rejections, React error boundaries) go back to a fixer agent automatically, at most 2 attempts in a row.
@@ -87,7 +87,7 @@ sequenceDiagram
 |---|---|
 | **One server port.** Vite runs as Express middleware in dev; production serves the static build. | Replit Autoscale exposes exactly one port. Dev and prod share one origin, so cookies, CSP and the iframe behave identically. |
 | **Server-side esbuild bundling over a virtual file system** instead of Babel in the browser | Generated files are real ES modules: the ZIP export runs them unchanged. Build errors come back with `file:line`, which the fixer needs. The plugin resolves imports only from memory, so user code never touches the disk or runs on the server. |
-| **Opaque-origin sandbox**: iframe without `allow-same-origin`, plus a `Content-Security-Policy: sandbox` response header | With `allow-same-origin` on our own origin, generated code could call PromptShip's API with the user's session. The CSP header also sandboxes published pages opened directly. `allow-forms` stays on, otherwise React `onSubmit` never fires. |
+| **Opaque-origin sandbox**: iframe without `allow-same-origin`, plus a `Content-Security-Policy: sandbox` response header | With `allow-same-origin` on our own origin, generated code could call SayShip's API with the user's session. The CSP header also sandboxes published pages opened directly. `allow-forms` stays on, otherwise React `onSubmit` never fires. |
 | **Runtime assets** (React dev/prod, Tailwind, error bridge) bundled once at boot and served with content hashes, CORS and `CORP: cross-origin` | No CDN dependency. Opaque-origin pages can load them. `crossorigin="anonymous"` keeps error messages from being masked as `Script error.` |
 | **Per-app data API with capability keys** instead of cookies | Sandboxed pages can't send cookies, and shouldn't. An unguessable key selects one app's preview or live data. The API is CORS-open, size- and count-limited, and rate-limited. |
 | **Structured Outputs for plans; streamed plain text for code** | Plans need a guaranteed shape. Code needs to stream token by token, which partial JSON would make awkward. The editor rewrites whole files: this is more reliable than diffs, and the files are small. |
@@ -97,7 +97,7 @@ sequenceDiagram
 | **Mock LLM provider** | The whole product, and every test, runs deterministically without an API key. `[broken]` and `[syntax]` prompts exercise the failure paths. |
 
 **Known limitations / next steps:**
-- Generated apps share PromptShip's domain. Production would serve them from a separate origin, such as `*.promptship-apps.dev`, which would also give them real storage.
+- Generated apps share SayShip's domain. Production would serve them from a separate origin, such as `*.sayship-apps.dev`, which would also give them real storage.
 - App data is schemaless JSONB. Next step: per-app Postgres schemas with generated migrations.
 - Other items: WebContainers for Node back-ends in generated apps, collaborative editing over WebSockets, custom domains for published apps.
 
@@ -116,8 +116,8 @@ sequenceDiagram
 Requirements: **Node 22+** and **Docker** (for Postgres).
 
 ```bash
-git clone <this repo> && cd promptship
-docker compose up -d                 # Postgres 16 on :5432 (creates promptship + promptship_test)
+git clone <this repo> && cd sayship
+docker compose up -d                 # Postgres 16 on :5432 (creates sayship + sayship_test)
 cp .env.example .env                 # then set SESSION_SECRET (and OPENAI_API_KEY for real generations)
 npm install
 npm run dev                          # http://localhost:3000
@@ -131,7 +131,7 @@ npm run dev                          # http://localhost:3000
 | `npm run dev` | Dev server with HMR (API + client + previews on one port) |
 | `npm run build` / `npm start` | Production build (`dist/`) and server |
 | `npm run typecheck` | TypeScript for client, server and E2E |
-| `npm test` | Vitest: unit + API integration tests against `promptship_test` |
+| `npm test` | Vitest: unit + API integration tests against `sayship_test` |
 | `npm run test:e2e` | Builds, then runs Playwright against the production server with the mock LLM |
 | `npm run db:generate` | New SQL migration after editing `server/src/db/schema.ts` (migrations run on boot) |
 
@@ -182,7 +182,7 @@ server/src/
   routes/          auth, projects, generate (SSE), preview, data, ship (publish/export), github
   services/        project/version/app-data queries
   auth/ db/ export/ lib/
-server/runtime/    browser code bundled into generated apps: error bridge, React mount, promptship SDK
+server/runtime/    browser code bundled into generated apps: error bridge, React mount, sayship SDK
 server/drizzle/    SQL migrations (applied on boot)
 shared/            zod schemas + types shared by client and server (plan, events, API DTOs)
 e2e/               Playwright tests

@@ -1,5 +1,5 @@
 {
-  "name": "promptship",
+  "name": "sayship",
   "version": "0.1.0",
   "private": true,
   "description": "AI full-stack app builder: natural-language prompt -> plan -> streamed code -> live sandboxed preview -> publish.",

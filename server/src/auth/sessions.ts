@@ -4,7 +4,7 @@ import type { Request, Response } from "express";
 import type { Db } from "../db/client";
 import { sessions, users } from "../db/schema";
 
-export const SESSION_COOKIE = "ps_session";
+export const SESSION_COOKIE = "sayship_session";
 const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 
 export type SessionUser = {

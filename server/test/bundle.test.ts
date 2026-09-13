@@ -9,11 +9,11 @@ const withApp = (app: string, extra: { path: string; content: string }[] = []) =
 ];
 
 describe("bundleApp", () => {
-  it("bundles a multi-file app that uses react and the promptship SDK", async () => {
+  it("bundles a multi-file app that uses react and the sayship SDK", async () => {
     const result = await bundleApp(MOCK_FILES, "preview");
     expect(result.ok).toBe(true);
     if (!result.ok) return;
-    expect(result.code).toContain("window.__ps_modules");
+    expect(result.code).toContain("window.__sayship_modules");
     expect(result.code).toContain("Task board");
     expect(result.code).toContain("/data/"); // SDK is bundled in
     expect(result.code).toContain("sourceMappingURL=data:application/json");
@@ -32,7 +32,7 @@ describe("bundleApp", () => {
     expect(result).toMatchObject({ ok: false, errors: [{ message: expect.stringContaining("App.jsx is missing") }] });
   });
 
-  it("rejects packages other than react and promptship, pointing at the import", async () => {
+  it("rejects packages other than react and sayship, pointing at the import", async () => {
     const result = await bundleApp(
       withApp(`import _ from "lodash";\nexport default function App() { return <div>{_.now()}</div>; }`),
       "preview",
